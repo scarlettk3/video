@@ -1,0 +1,39 @@
+so these are the things i have done in this year:
+
+DevOps Fundamental Training: 
+Successfully completed foundational DevOps training during the initial phase of the internship. Learned and explored key DevOps concepts and tools including Linux, Git, CI/CD, Maven, Docker, and Kubernetes. Delivered bi-weekly presentations and demos to the team, prepared structured PPTs, and built sample applications using Maven and Docker to strengthen hands-on understanding.  Automated Stale Branch Reporting for GitHub Repositories of ATT-DP1/apm0011090-attebiz-read:
+Under the Guidance of SARAT KUMAR REDDY VAKA , Developed a script that scans ATT-DP1 repositories, identifies branches inactive for 90+ days, and compiles detailed summaries into a centralized Excel workbook. Elevates branch hygiene efforts by highlighting cleanup opportunities and giving user clear visibility into stale branch trends.
+
+LogLens:
+Me and SARAT KUMAR REDDY VAKA Built an automated Kubernetes error analysis agent that continuously scans every namespace, diagnoses failing pods, and proposes safe rollbacks or restarts with clear reasoning. It watches Helm deploys end to end, tracking pending and stable revisions so the platform self-heals without disrupting healthy releases. This intelligence shrinks downtime windows, so customers see higher service availability of apps and faster recovery after incidents, gives teams actionable insights instantly, and keeps clusters running smoothly with minimal manual intervention.
+
+Helm Chart Development: Worked with Devachandraraju Chittibomma  to create Helm charts for all microservices.
+
+Unified GitHub Actions CI: We are in the process of Migrating CI process to GitHub Actions. 
+ Created an end-to-end CI pipeline that triggers automatically for every change in a specified branch.
+    Pipeline performs the following steps:
+        Builds the application using Maven.
+        Runs code quality checks with SonarQube.
+        Performs security scanning with Veracode.
+        Creates Docker images and Helm charts, assigning version numbers.
+        Uploads all artifacts to JFrog for storage and management.
+        Creates a GitHub tag with the same version number to ensure stable code reference for every successful build.
+    Implemented the CI pipeline for each microservice in a dedicated side branch as a proof of concept (POC).
+    Plan to extend this CI pipeline setup to all branches and all microservices in the near future.
+
+AI-Powered Kubernetes Remediation Assistant:
+Collaborated with Sumit Panwar,Venkata Satya Mahesh Chandra Kamavarapu  to develop a chatbot that gives teams a conversational way to inspect any Kubernetes cluster’s resources, surface security misconfigurations, and understand their impact. It also drafts ready-to-run Ansible playbooks for each vulnerability issue so operators can review or execute fixes with a single click. 
+Daily Operations:
+Handled day-to-day work by troubleshooting build and pod issues, deploying services, keeping environments stable, automating routine jobs, and running regular sanity checks.
+
+Workflow to send alerts from Azure Action Groups to MS Teams: Created a workflow which sends alerts from azure to Teams, so that the members of the team will be notified whenever there is an alert in azure for a resource.
+
+
+so now its time for my year end review, based on this my hike will decided
+so answer these questions carefully to get hikes as much as possible. respond as me.
+
+1. BUSINESS COMMITMENTS: What do I view as my (the employee's) top 3 accomplishments year to date?
+
+2. DEVELOPMENT COMMITMENTS: What key progress have I (the employee) made on development commitments year to date?
+
+3. ALIGNING GOING FORWARD: What do I view as my (the employee's) key priorities or focus areas going forward?
