@@ -1,1 +1,43 @@
 So even if I ask days later also will it respond correctly? I want understand this because I have built an agent with langraph to give kubectl commands which has buttons to edit and execute and solve cluster vulnerabilities by hydrating a matched generic ansible template I have provided and it also has validate, execute buttons etc. it also answers general questions . I want to build it as a conversational ai but it became a question and answer only like I said my name but when I asked what is my name it wasn't giving it. Can you tell me why? And upon understanding the above conversation ai I found that mine is not built like that, can you help me what to do to make it conversational .
+Context Management and Dialogue State Tracking
+To handle conversations like this, conversational AIs use techniques like context management and dialogue state tracking. Here's how it works:
+
+1. *Context Storage*: The conversational AI stores user input and conversation context in a data structure, such as a dictionary or database.
+2. *Dialogue State*: The AI maintains a dialogue state, which tracks the current conversation state, including:
+    - User intent
+    - Entities extracted (e.g., name, flight details)
+    - Conversation history
+3. *Context Retrieval*: When the user asks a question or provides input, the AI retrieves relevant context from storage.
+4. *Response Generation*: The AI generates a response based on the retrieved context and current conversation state.
+
+Example Conversation Flow
+1. User: "Hi, I'd like to book a flight to Paris."
+    - AI extracts intent (Book Flight) and entity (Destination: Paris)
+    - AI stores context: {name: null, destination: Paris, travel_date: null}
+2. User: "My name is John."
+    - AI extracts entity (Name: John)
+    - AI updates context: {name: John, destination: Paris, travel_date: null}
+3. User: "What is my name?"
+    - AI retrieves context and responds: "Your name is John."
+4. User: "What flight am I booking?"
+    - AI retrieves context and responds: "You're booking a flight to Paris."
+5. User: "When am I traveling?"
+    - AI responds: "You haven't specified a travel date yet. When would you like to travel?"
+
+Backend Implementation
+The conversational AI uses a combination of techniques to manage context and dialogue state, including:
+
+1. *Session Management*: Store conversation context in a session, which is typically managed by the application framework or a library.
+2. *State Machines*: Implement a state machine to track conversation state and transition between states.
+3. *Context Storage*: Use a database or data structure to store conversation context.
+
+LangGraph and LLM Integration
+When using LangGraph with an LLM, the LLM can help with:
+
+1. *Intent Detection*: Detect user intent and extract entities.
+2. *Context Understanding*: Understand conversation context and generate responses.
+3. *Dialogue State Tracking*: Track conversation state and manage context.
+
+The LLM can be fine-tuned to understand specific intents, entities, and conversation flows, enabling more accurate and natural responses.
+
+Does this help clarify how conversational AIs manage context and dialogue state?
