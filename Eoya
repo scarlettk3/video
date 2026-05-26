@@ -25,54 +25,30 @@ As I transition from my first year in DevOps, I'm committed to deepening my clou
 
 
 
-Background
+I am working on a research project in Software Defined Networking (SDN) security.
 
-You are working on a distributed GPU compute cluster at NVIDIA. The cluster's interconnect is structured as a **tree** N compute nodes connected by N-1 bidirectional links with no cycles. Each link has a known transmission latency measured in microseconds.
+My proposed idea is:
 
-For capacity planning and SLA verification, your manager
+“To address the limitations of existing Link Flooding Attack (LFA) detection systems, this work proposes an intelligent attack detection framework that integrates Evolutionary Neural Architecture Search (ENAS) with Generative Adversarial Networks (GAN) in an SDN environment. The proposed approach utilizes Evolutionary NAS to automatically discover and optimize the discriminator architecture of the GAN model, enabling improved feature extraction, adaptive learning, and enhanced detection performance for advanced LFA attacks.”
 
-asks:
+The advanced attack categories include:
 
-"What is the worst-case end-to-end communication latency between any two nodes in this cluster?"
+Topology Poisoning LFA
 
-A message travelling between two nodes must traverse the unique path connecting them in the tree. The latency of that journey is the sum of the latencies of all links on the path.
+Telemetry Evasion LFA
 
-Task
+Slice-Aware LFA
 
-Given the topology of the cluster, compute the **maximum possible communication latency** between any pair of nodes.
+Flow-Rule Saturation Flooding
 
-Input Format
+Quantum-Inspired Coordinated LFA
 
-N u1 v1 w1
+I want to build this project completely from scratch using:
 
-u2 v2 w2
+Mininet
 
-(N-1 lines)
+Ryu Controller
 
-Hacker Papi Confitential
+Open vSwitch
 
-First line: integer N - number of compute nodes (nodes are numbered 1 to N)
-
-C
-
-Next N-1 lines: each line describes one bidirectional link with endpoints ù, v'and latency w
-
-A
-
-Output Format
-
-Confidenti
-
-A single integer - the maximum end-to-end latency.
-
-Constraints
-
-1 ≤ N ≤ 100,000
-
-1 ≤ u, v ≤ N, u ≠ v
-
-1 ≤ w ≤ 10,000
-
-@student.nitw.ac.in
-
-Input always forms a valid tree (connected, no
+Python
