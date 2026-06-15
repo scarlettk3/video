@@ -5,6 +5,7 @@ from mininet.node import RemoteController, OVSKernelSwitch
 from mininet.link import TCLink
 from mininet.cli import CLI
 from mininet.log import setLogLevel
+
 class FatTreeTopo(Topo):
     """
     Fat-Tree Topology with k=4
@@ -19,9 +20,11 @@ class FatTreeTopo(Topo):
         num_agg_per_pod  = k // 2              # 2
         num_edge_per_pod = k // 2              # 2
         num_host_per_edge = k // 2             # 2
+
         core_switches = []
         pod_switches  = []
         hosts         = []
+
         # ── Core switches ──────────────────────────────────────────────
         for i in range(num_core):
             sw = self.addSwitch(
@@ -30,11 +33,13 @@ class FatTreeTopo(Topo):
                 protocols='OpenFlow13'
             )
             core_switches.append(sw)
+
         # ── Pods ───────────────────────────────────────────────────────
         host_count = 1
         for pod in range(num_pods):
             agg_switches  = []
             edge_switches = []
+
             # Aggregation switches
             for a in range(num_agg_per_pod):
                 sw = self.addSwitch(
@@ -43,6 +48,7 @@ class FatTreeTopo(Topo):
                     protocols='OpenFlow13'
                 )
                 agg_switches.append(sw)
+
             # Edge switches + hosts
             for e in range(num_edge_per_pod):
                 sw = self.addSwitch(
@@ -51,6 +57,7 @@ class FatTreeTopo(Topo):
                     protocols='OpenFlow13'
                 )
                 edge_switches.append(sw)
+
                 for h in range(num_host_per_edge):
                     host = self.addHost(
                         f'h{host_count}',
@@ -59,19 +66,24 @@ class FatTreeTopo(Topo):
                     self.addLink(host, sw,
                                  bw=100, delay='1ms', loss=0)
                     host_count += 1
+
             # Edge ↔ Aggregation links
             for e_sw in edge_switches:
                 for a_sw in agg_switches:
                     self.addLink(e_sw, a_sw,
                                  bw=1000, delay='1ms', loss=0)
+
             # Aggregation ↔ Core links
             for a_idx, a_sw in enumerate(agg_switches):
                 for j in range(num_edge_per_pod):
                     core_idx = a_idx * num_edge_per_pod + j
                     self.addLink(a_sw, core_switches[core_idx],
                                  bw=10000, delay='1ms', loss=0)
+
             pod_switches.append((agg_switches, edge_switches))
+
 topos = {'mytopo': (lambda: FatTreeTopo())}
+
 if __name__ == '__main__':
     setLogLevel('info')
     topo = FatTreeTopo()
@@ -84,4 +96,6 @@ if __name__ == '__main__':
     )
     net.start()
     CLI(net)
-    net.stop(),for this topology and controller can you give lfa (Traditional LFA,slice aware, quantum,topology poison,flowrule saturation, telemetary evasion)attack scripts so that i can train ENAS+GAN+SDN for real time detection so that i can get 5L rows after pacp file is converted to csv in cicflowmeter for research purpose
+    net.stop()
+
+for this topology can i run the  attack scripts you have given
