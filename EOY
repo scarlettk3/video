@@ -1,296 +1,139 @@
-#!/usr/bin/env python3
-from mininet.topo import Topo
-from mininet.net import Mininet
-from mininet.node import RemoteController, OVSKernelSwitch
-from mininet.link import TCLink
-from mininet.cli import CLI
-from mininet.log import setLogLevel
 
-class FatTreeTopo(Topo):
-    """
-    Fat-Tree Topology with k=4
-    - 4 core switches
-    - 8 aggregation switches (2 per pod)
-    - 8 edge switches      (2 per pod)
-    - 16 hosts             (2 per edge switch)
-    """
-    def build(self, k=4):
-        num_pods      = k
-        num_core      = (k // 2) ** 2          # 4
-        num_agg_per_pod  = k // 2              # 2
-        num_edge_per_pod = k // 2              # 2
-        num_host_per_edge = k // 2             # 2
+I have two CICFlowMeter generated flow CSV files. I need you to merge both files into a single dataset for training an ENAS + GAN + SDN based intrusion detection model.
 
-        core_switches = []
-        pod_switches  = []
-        hosts         = []
+Tasks:
 
-        # ── Core switches ──────────────────────────────────────────────
-        for i in range(num_core):
-            sw = self.addSwitch(
-                f'c{i+1}',
-                cls=OVSKernelSwitch,
-                protocols='OpenFlow13'
-            )
-            core_switches.append(sw)
+1. Merge the two CSV files:
+   - Combine all flow records from both files.
+   - Preserve all valid rows.
+   - Remove duplicate header rows after merging.
+   - Do not remove or modify flow records.
 
-        # ── Pods ───────────────────────────────────────────────────────
-        host_count = 1
-        for pod in range(num_pods):
-            agg_switches  = []
-            edge_switches = []
+2. Feature selection:
+   Select only the network traffic features that are useful for training an ENAS + GAN + SDN model for LFA (Link Flooding Attack) detection.
 
-            # Aggregation switches
-            for a in range(num_agg_per_pod):
-                sw = self.addSwitch(
-                    f'a{pod+1}{a+1}',
-                    cls=OVSKernelSwitch,
-                    protocols='OpenFlow13'
-                )
-                agg_switches.append(sw)
+Keep important features related to:
+- Flow statistics
+- Packet statistics
+- Traffic rate
+- Duration
+- Packet length behavior
+- TCP/UDP protocol behavior
+- Forward and backward flow characteristics
+- Burstiness and communication patterns
 
-            # Edge switches + hosts
-            for e in range(num_edge_per_pod):
-                sw = self.addSwitch(
-                    f'e{pod+1}{e+1}',
-                    cls=OVSKernelSwitch,
-                    protocols='OpenFlow13'
-                )
-                edge_switches.append(sw)
+Prefer keeping features such as:
 
-                for h in range(num_host_per_edge):
-                    host = self.addHost(
-                        f'h{host_count}',
-                        ip=f'10.{pod}.{e}.{h+1}/24'
-                    )
-                    self.addLink(host, sw,
-                                 bw=100, delay='1ms', loss=0)
-                    host_count += 1
+- Flow Duration
+- Total Fwd Packets
+- Total Backward Packets
+- Total Length of Fwd Packets
+- Total Length of Bwd Packets
+- Fwd Packet Length Mean
+- Bwd Packet Length Mean
+- Flow Bytes/s
+- Flow Packets/s
+- Packet Length Mean
+- Packet Length Std
+- Packet Length Variance
+- Average Packet Size
+- Fwd IAT Mean
+- Bwd IAT Mean
+- Active Mean
+- Idle Mean
+- SYN Flag Count
+- ACK Flag Count
+- FIN Flag Count
+- RST Flag Count
+- PSH Flag Count
+- Protocol
+- Destination Port
+- Source Port
+- Down/Up Ratio
+- Subflow Features
+- Header Length features
 
-            # Edge ↔ Aggregation links
-            for e_sw in edge_switches:
-                for a_sw in agg_switches:
-                    self.addLink(e_sw, a_sw,
-                                 bw=1000, delay='1ms', loss=0)
+Remove:
+- Non-informative identifiers
+- IP addresses (if they cause overfitting)
+- Timestamps
+- Flow IDs
+- Source/Destination IP dependent features
+- Duplicate or highly correlated features
+- Empty columns
+- Constant value columns
 
-            # Aggregation ↔ Core links
-            for a_idx, a_sw in enumerate(agg_switches):
-                for j in range(num_edge_per_pod):
-                    core_idx = a_idx * num_edge_per_pod + j
-                    self.addLink(a_sw, core_switches[core_idx],
-                                 bw=10000, delay='1ms', loss=0)
+3. Dataset labeling:
 
-            pod_switches.append((agg_switches, edge_switches))
+Add a new column called:
 
-topos = {'mytopo': (lambda: FatTreeTopo())}
+Label
 
-if __name__ == '__main__':
-    setLogLevel('info')
-    topo = FatTreeTopo()
-    net  = Mininet(
-        topo=topo,
-        controller=RemoteController('c0', ip='127.0.0.1', port=6633),
-        switch=OVSKernelSwitch,
-        link=TCLink,
-        autoSetMacs=True
-    )
-    net.start()
-    CLI(net)
-    net.stop()
+Assign labels according to the traffic source:
 
+Normal
+Traditional LFA
+Topology Poisoning
+Telemetry Evasion
+Slice-Aware
+Flow-Rule Saturation
+Quantum-Inspired LFA
 
+The final dataset should have:
 
+| Selected Network Features | Label |
+|--------------------------|-------|
+| Flow statistics          | Normal |
+| Flow statistics          | Traditional LFA |
+| Flow statistics          | Topology Poisoning |
+| Flow statistics          | Telemetry Evasion |
+| Flow statistics          | Slice-Aware |
+| Flow statistics          | Flow-Rule Saturation |
+| Flow statistics          | Quantum-Inspired LFA |
 
+4. Data preprocessing:
 
+Before saving:
+- Handle missing values.
+- Remove NaN and infinite values.
+- Convert categorical features into numerical format where required.
+- Normalize numerical features if needed for neural network training.
+- Maintain class balance information.
+- Do not oversample unless requested.
 
-#!/usr/bin/env python3
-"""
-=============================================================================
-LFA-ENAS-GAN-SDN: Custom Ryu Controller
-=============================================================================
-Features:
-  1. OpenFlow 1.3 support
-  2. MAC learning + L2 forwarding (like simple_switch_13)
-  3. Idle timeout = 10 seconds (as per your procedure)
-  4. Default flow reinstall after idle timeout
-  5. Per-flow statistics collection every 5 seconds
-  6. Packet-In rate monitoring (Flow-Rule Saturation detection)
-  7. Flow count monitoring per switch (TCAM exhaustion detection)
-  8. LLDP packet logging (Topology Poisoning detection)
-  9. All stats logged to /tmp/controller_stats.log
-=============================================================================
-"""
+5. Output:
 
-from os_ken.base import app_manager
-from os_ken.controller import ofp_event
-from os_ken.controller.handler import (
-    CONFIG_DISPATCHER,
-    MAIN_DISPATCHER,
-    DEAD_DISPATCHER,
-    set_ev_cls
-)
-from os_ken.ofproto import ofproto_v1_3
-from os_ken.lib.packet import (
-    packet,
-    ethernet,
-    ipv4,
-    ipv6,
-    tcp,
-    udp,
-    icmp,
-    ether_types
-)
-from os_ken.lib import hub
-from os_ken.topology import event as topo_event
-from os_ken.topology.api import get_switch, get_link
+Generate a final CSV file named:
 
-import time
-import collections
-import logging
-import os
+ENAS_GAN_SDN_LFA_Dataset.csv
 
-# ── Logging Setup ──────────────────────────────────────────────────────────
-LOG_FILE = "/tmp/controller_stats.log"
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.FileHandler(LOG_FILE),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger("LFA_Controller")
+The final CSV should:
+- Contain only selected ML features.
+- Have the Label column.
+- Be ready for ENAS architecture search, GAN data augmentation, and SDN intrusion detection model training.
+
+Also provide:
+- Number of samples before and after processing.
+- Number of features selected.
+- List of removed features.
+- Class distribution after labeling.
 
 
-class LFAController(app_manager.OSKenApp):
-    """
-    Custom SDN controller for LFA detection research.
-    Handles Fat-Tree k=4 topology with 20 switches and 16 hosts.
-    """
 
-    OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
-    # ── Your Fat-Tree switch names ─────────────────────────────────
-    FAT_TREE_SWITCHES = [
-        'c1', 'c2', 'c3', 'c4',           # Core
-        'a11','a12','a21','a22',           # Aggregation pod 1,2
-        'a31','a32','a41','a42',           # Aggregation pod 3,4
-        'e11','e12','e21','e22',           # Edge pod 1,2
-        'e31','e32','e41','e42',           # Edge pod 3,4
-    ]
 
-    # ── Your Fat-Tree host IPs ─────────────────────────────────────
-    HOST_IPS = [
-        "10.0.0.1","10.0.0.2","10.0.1.1","10.0.1.2",
-        "10.1.0.1","10.1.0.2","10.1.1.1","10.1.1.2",
-        "10.2.0.1","10.2.0.2","10.2.1.1","10.2.1.2",
-        "10.3.0.1","10.3.0.2","10.3.1.1","10.3.1.2",
-    ]
 
-    def __init__(self, *args, **kwargs):
-        super(LFAController, self).__init__(*args, **kwargs)
 
-        # ── MAC learning table: {dpid: {mac: port}} ───────────────
-        self.mac_to_port = {}
 
-        # ── Datapath registry: {dpid: datapath} ───────────────────
-        self.datapaths = {}
 
-        # ── Packet-In counters: {dpid: count} ─────────────────────
-        self.pkt_in_count = collections.defaultdict(int)
 
-        # ── Per-switch flow counts: {dpid: count} ─────────────────
-        self.flow_counts = collections.defaultdict(int)
 
-        # ── Traffic stats: {dpid: {cookie: (bytes, packets)}} ─────
-        self.flow_stats = collections.defaultdict(dict)
 
-        # ── LLDP injection counter (Topology Poisoning detection) ──
-        self.lldp_count = collections.defaultdict(int)
 
-        # ── Timestamps ────────────────────────────────────────────
-        self.start_time = time.time()
-        self.last_stats_time = time.time()
 
-        # ── Thresholds for anomaly logging ────────────────────────
-        self.PKT_IN_THRESHOLD  = 1000   # packet-ins/interval → saturation alert
-        self.FLOW_CNT_THRESHOLD = 800   # flows per switch    → TCAM alert
-        self.LLDP_THRESHOLD     = 50    # LLDP frames/interval→ poison alert
 
-        # ── Idle timeout (10s as per your procedure) ───────────────
-        self.IDLE_TIMEOUT = 10
-        self.HARD_TIMEOUT = 0           # no hard timeout
 
-        # ── Start background monitoring thread ────────────────────
-        self.monitor_thread = hub.spawn(self._monitor_loop)
-
-        logger.info("=" * 60)
-        logger.info("LFA Controller started")
-        logger.info(f"Idle timeout  : {self.IDLE_TIMEOUT}s")
-        logger.info(f"Log file      : {LOG_FILE}")
-        logger.info(f"PKT-IN thresh : {self.PKT_IN_THRESHOLD}")
-        logger.info(f"Flow thresh   : {self.FLOW_CNT_THRESHOLD}")
-        logger.info("=" * 60)
-
-    # =========================================================
-    #  SWITCH CONNECT / DISCONNECT
-    # =========================================================
-
-    @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
-    def switch_features_handler(self, ev):
-        """
-        Called when a switch connects.
-        Installs the default table-miss flow (priority=0)
-        as per your procedure.
-        """
-        datapath = ev.msg.datapath
-        ofproto  = datapath.ofproto
-        parser   = datapath.ofproto_parser
-        dpid     = datapath.id
-
-        self.datapaths[dpid] = datapath
-        self.mac_to_port.setdefault(dpid, {})
-
-        logger.info(f"[+] Switch connected: dpid={dpid:#010x}")
-
-        # ── Install table-miss flow (priority=0) ──────────────────
-        # Sends all unmatched packets to controller
-        # permanent — idle_timeout=0 so it survives the 10s timeout
-        match   = parser.OFPMatch()
-        actions = [
-            parser.OFPActionOutput(
-                ofproto.OFPP_CONTROLLER,
-                ofproto.OFPCML_NO_BUFFER
-            )
-        ]
-        self._add_flow(
-            datapath,
-            priority=0,
-            match=match,
-            actions=actions,
-            idle_timeout=0,    # permanent default flow
-            hard_timeout=0
-        )
-        logger.info(f"    Default flow installed on dpid={dpid:#010x}")
-
-    @set_ev_cls(ofp_event.EventOFPStateChange,
-                [MAIN_DISPATCHER, DEAD_DISPATCHER])
-    def state_change_handler(self, ev):
-        """Track switch connect/disconnect."""
-        datapath = ev.datapath
-        dpid     = datapath.id
-        if ev.state == MAIN_DISPATCHER:
-            self.datapaths[dpid] = datapath
-            logger.info(f"[+] Switch ACTIVE : dpid={dpid:#010x}")
-        elif ev.state == DEAD_DISPATCHER:
-            self.datapaths.pop(dpid, None)
-            logger.info(f"[-] Switch REMOVED: dpid={dpid:#010x}")
-
-    # =========================================================
-    #  PACKET-IN HANDLER
-    # =========================================================
-
-    @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
+@set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def packet_in_handler(self, ev):
         """
         Main packet handler:
