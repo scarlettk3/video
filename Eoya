@@ -1,435 +1,130 @@
-1. BUSINESS COMMITMENTS: What do I view as my top 3 accomplishments year to date?
-LogLens - Automated Kubernetes Error Analysis Agent:
-My most impactful contribution has been co-developing LogLens, an intelligent system that continuously monitors all Kubernetes namespaces, automatically diagnoses failing pods, and recommends safe remediation actions. This solution dramatically reduces Mean Time to Recovery (MTTR) by providing instant actionable insights, eliminating manual log hunting, and enabling self-healing capabilities. The business impact is significant - improved service availability for customers, reduced downtime windows, and freed engineering capacity from repetitive troubleshooting tasks.
-Unified GitHub Actions CI Pipeline:
-I designed and implemented a comprehensive end-to-end CI pipeline that automates the entire build-to-deployment lifecycle. This pipeline integrates Maven builds, SonarQube quality gates, Veracode security scanning, Docker image creation, Helm chart generation, JFrog artifact management, and automated versioning with GitHub tags. By standardizing our CI process across microservices, I've established a foundation for faster releases, improved code quality, consistent security posture, and full artifact traceability - all critical for scaling our development operations.
-AI-Powered Kubernetes Remediation Assistant:
-I collaborated on building an intelligent chatbot that democratizes Kubernetes security by making cluster inspection and vulnerability remediation accessible through natural conversation. The assistant not only identifies security misconfigurations but generates executable Ansible playbooks, enabling rapid, confident remediation. This tool empowers the entire team to maintain security compliance proactively and reduces the specialized knowledge barrier typically required for Kubernetes security management.
+Develop a complete real-time multi-agent framework for detecting and mitigating Link Flooding Attacks (LFA) in an SDN environment using Ryu and Mininet/Open vSwitch.
 
+The system must contain three AI agents that operate in a closed-loop real-time setup:
 
-DEVELOPMENT COMMITMENTS: What key progress have I made on development commitments year to date?
-I've made significant progress in developing key skills in DevOps, cloud computing, and automation. Specifically:
+1. **Agent 1 — LFA Traffic Generation Agent:** Reuse my already-trained tabular GAN `Generator` as a frozen model. An epsilon-greedy bandit should control the adversarial/evasion mode of the generator. The bandit reward should be based on the attack objective minus the Detection Agent's confidence. The generator must operate during the live experiment, not generate attack samples offline. Its generated feature profiles should be translated into bounded traffic-generation parameters and used to produce controlled LFA traffic in a Mininet/Open vSwitch testbed. The generated traffic must remain within an isolated experimental environment.
 
-- I've gained hands-on experience with tools like Linux, Git, CI/CD, Maven, Docker, and Kubernetes.
-- I've developed scripting skills in automation and created tools like LogLens and the AI-Powered Kubernetes Remediation Assistant.
-- I've improved my knowledge of cloud platforms, including Azure, and have implemented workflows to integrate Azure services with MS Teams.
+2. **Agent 2 — Detection Agent:** Reuse my existing frozen ENAS+GAN classifier, preferably the `enas_with_gan` model, without retraining or changing its architecture. Integrate it directly with the Ryu controller so that Ryu continuously collects OpenFlow statistics, extracts exactly the same features used during training, applies the same preprocessing/scaler, and sends each completed feature window to the frozen classifier. The detector must output the LFA prediction and detection confidence in real time.
 
-ALIGNING GOING FORWARD: What do I view as my key priorities or focus areas going forward?
-Going forward, my key priorities will be
-- *
-- *Enhancing Automation*: I'll continue to explore opportunities to automate repetitive tasks, improve workflows, and optimize our DevOps processes.
-- *Driving Innovation*: I'm excited to explore emerging technologies and contribute to innovative projects that can drive business value and improve customer experiences
+3. **Agent 3 — DQN Mitigation Agent:** Use my DQN mitigation agent trained offline in an environment that models link congestion and many-flow crowding. When Agent 2 detects an LFA, the DQN should receive the current network state, select an appropriate mitigation action, and allow Ryu to apply the corresponding routing, flow-management, rate-control, or other safe mitigation policy in the SDN testbed.
 
-Expand Cloud Infrastructure and IaC Expertise:
-As I transition from my first year in DevOps, I'm committed to deepening my cloud infrastructure knowledge, particularly in Azure and Infrastructure-as-Code tools like Terraform. While I've gained strong foundational experience with Kubernetes and CI/CD, I recognize that mastering cloud-native architecture, resource provisioning, and infrastructure automation is crucial for delivering scalable, cost-effective solutions. I want to contribute more strategically to our infrastructure decisions and be able to design, provision, and manage cloud resources independently using best practices.
+The complete system should work as a real-time closed loop:
 
+`Frozen GAN + Bandit → Live LFA Traffic → SDN Network → Ryu Statistics → Feature Extraction → Frozen ENAS+GAN Detector → DQN Mitigation → Ryu Network Action`
 
-I am working on a research project in Software Defined Networking (SDN) security.
+Additionally, Detection Agent confidence must be fed back to Agent 1 so that the epsilon-greedy bandit can dynamically select attack/evasion modes according to:
 
-My proposed idea is:
+`Reward = Attack Effectiveness − Detection Confidence`
 
-“To address the limitations of existing Link Flooding Attack (LFA) detection systems, this work proposes an intelligent attack detection framework that integrates Evolutionary Neural Architecture Search (ENAS) with Generative Adversarial Networks (GAN) in an SDN environment. The proposed approach utilizes Evolutionary NAS to automatically discover and optimize the discriminator architecture of the GAN model, enabling improved feature extraction, adaptive learning, and enhanced detection performance for advanced LFA attacks.”
+This feedback must happen during the live experiment so that Agent 1 dynamically adapts while Agent 2 simultaneously performs real-time detection.
 
-The advanced attack categories include:
+Create a separate **Experiment Manager / Ground Truth Logger** that records when each attack begins and ends, which generator mode is selected, the target link, and all system timestamps. Ground-truth information must only be used for evaluation and must never be provided as an input feature to the Detection Agent.
 
-Topology Poisoning LFA
+Record timestamps for:
 
-Telemetry Evasion LFA
+* generator decision
+* traffic generation/start
+* controller statistics arrival
+* feature extraction completion
+* detection inference start/end
+* detection decision
+* mitigation decision
+* mitigation rule installation
+* network recovery
 
-Slice-Aware LFA
+Use these timestamps to calculate:
 
-Flow-Rule Saturation Flooding
+* generation latency
+* observation latency
+* feature-extraction latency
+* model inference latency
+* end-to-end detection latency
+* mitigation latency
+* total response latency
+* network recovery time
 
-Quantum-Inspired Coordinated LFA
+Define real-time operation quantitatively. The system should demonstrate that feature extraction and model inference can complete before the next monitoring window arrives.
 
-I want to build this project completely from scratch using:
+Evaluate the system under at least four scenarios:
 
-Mininet
+* benign traffic only
+* conventional LFA
+* GAN-generated LFA
+* adaptive AI-generated LFA where the bandit responds to detector confidence
 
-Ryu Controller
+Also test generalization using unseen conditions such as different topologies, numbers of hosts, link capacities, traffic mixes, attack intensities, flow counts, or routing paths while keeping the Detection Agent frozen.
 
-Open vSwitch
+Evaluate the Detection Agent using:
 
-Python
+* accuracy
+* precision
+* recall
+* F1-score
+* ROC-AUC where appropriate
+* false-positive rate
+* false-negative rate
+* detection latency
 
-Scapy
+Evaluate the adversarial generation agent using:
 
-iPerf
+* attack effectiveness
+* link congestion achieved
+* evasion success rate
+* detector confidence over time
+* selected attack/evasion mode over time
 
-TensorFlow/PyTorch
+Evaluate the DQN mitigation agent using:
 
-GAN
+* congestion reduction
+* network recovery time
+* legitimate throughput retained
+* packet loss
+* flow completion time
+* link utilization before and after mitigation
+* unnecessary mitigation rate
 
-Evolutionary NAS
+Ensure there is no label leakage. The Detection Agent must receive only features that would realistically be available from the SDN controller. Do not include values such as attack labels, generator mode, attack session ID, or ground-truth information in classifier inputs.
 
-I need a COMPLETE step-by-step implementation including:
+Run at least one continuous experiment containing alternating benign and attack periods so that the system demonstrates live transitions, for example:
 
-Provide complete commands for:
+`Benign → Conventional LFA → Benign → Adaptive AI-generated LFA → Benign → Adaptive AI-generated LFA`
 
-Installing Mininet
+Generate synchronized plots showing:
 
-Installing Ryu Controller
+* ground-truth attack state
+* link utilization
+* detector confidence
+* predicted class
+* Agent 1 attack/evasion mode
+* mitigation actions
+* network recovery
 
-Installing Open vSwitch
-
-Installing Scapy
-
-Installing iPerf/iPerf3
-
-Installing hping3
-
-Setting up Ubuntu environment
-
-Required Python packages
-
-Provide all terminal commands from scratch.
-
-Provide:
-
-Mininet topology creation commands
-
-Fat-tree or NSFNET topology code
-
-Multi-switch SDN topology
-
-Bottleneck link configuration
-
-Bandwidth limitation setup
-
-OpenFlow configuration
-
-Commands to start topology
-
-Include:
-
-Python topology script
-
-Execution commands
-
-Controller connection setup
-
-Provide commands and Python scripts to generate:
-
-Normal TCP traffic
-
-UDP traffic
-
-ICMP traffic
-
-Web-like traffic
-
-Video streaming traffic
-
-Background mixed traffic
-
-Use:
-
-iPerf
-
-D-ITG
-
-ping
-
-Python sockets
-
-Provide:
-
-commands
-
-explanations
-
-expected outputs
-
-Provide complete commands and scripts for generating:
-
-A. Traditional Link Flooding Attack
-
-Include:
-
-decoy server selection
-
-coordinated low-rate flooding
-
-hping3 commands
-
-Python flood scripts
-
-B. Topology Poisoning LFA
-
-Include:
-
-fake LLDP packet generation
-
-Scapy scripts
-
-topology manipulation
-
-controller confusion attack
-
-C. Telemetry Evasion LFA
-
-Include:
-
-burst traffic generation
-
-randomized attack intervals
-
-stealth flow generation
-
-variable packet size traffic
-
-D. Slice-Aware LFA
-
-Include:
-
-network slicing simulation
-
-VLAN or queue-based slicing
-
-selective slice flooding
-
-QoS manipulation
-
-E. Flow-Rule Saturation Flooding
-
-Include:
-
-TCAM overflow generation
-
-packet-in storm creation
-
-random flow generation
-
-flow table exhaustion attack
-
-F. Quantum-Inspired Coordinated LFA
-
-Include:
-
-synchronized adaptive bots
-
-probabilistic target selection
-
-multi-path congestion
-
-dynamic path switching
-
-Provide:
-
-attack scripts
-
-commands
-
-expected controller behavior
-
-traffic characteristics
-
-Provide commands for:
-
-Capturing packets using tcpdump
-
-Exporting PCAP files
-
-Flow feature extraction
-
-Using CICFlowMeter or tshark
-
-Extracting:
-
-packet count
-
-byte count
-
-flow duration
-
-entropy
-
-bandwidth
-
-packet rate
-
-inter-arrival time
-
-source/destination diversity
-
-Provide:
-
-commands
-
-scripts
-
-dataset format
-
-Provide complete code for:
-
-GAN generator
-
-GAN discriminator
-
-GAN training
-
-Synthetic attack traffic generation
-
-Dataset balancing
-
-Feature preprocessing
-
-Use:
-
-TensorFlow or PyTorch
-
-Include:
-
-training loop
-
-optimizer
-
-loss function
-
-evaluation metrics
-
-Provide complete implementation of:
-
-Evolutionary NAS algorithm
-
-Population initialization
-
-Mutation
-
-Crossover
-
-Fitness evaluation
-
-Architecture search
-
-Automatic discriminator optimization
-
-Include:
-
-CNN/LSTM/DNN combinations
-
-architecture encoding
-
-evolutionary search strategy
-
-best architecture selection
-
-Show how to integrate:
-
-GAN
-
-Evolutionary NAS
-
-SDN traffic features
-
-Provide:
-
-workflow
-
-architecture diagram explanation
-
-pipeline
-
-training sequence
-
-Provide code for:
-
-Training the final model
-
-Testing attack detection
-
-Multi-class classification
-
-Real-time SDN detection
-
-Calculate:
-
-Accuracy
-
-Precision
-
-Recall
-
-F1-score
-
-Detection latency
-
-False positive rate
-
-Provide Python code for:
-
-Confusion matrix
-
-ROC curve
-
-Attack traffic graphs
-
-Link utilization graphs
-
-GAN loss graphs
-
-NAS evolution graphs
-
-Explain clearly:
-
-What is novel in this work
-
-Why advanced LFAs are important
-
-How ENAS improves GAN
-
-Why existing methods fail
-
-Research contribution points
-
-Generate:
-
-Abstract
-
-Problem statement
-
-Proposed methodology
-
-System architecture
-
-Algorithm
-
-Experimental setup
-
-Results section
-
-Conclusion
-
-Future work
-
-Use IEEE research paper format.
-
-Give complete executable commands
-
-Give working Python scripts
-
-Explain every step
-
-Assume beginner-level setup
-
-Use Ubuntu Linux
-
-Use Mininet + Ryu
-
-Include dataset generation
-
-Include attack simulation
-
-Include GAN + ENAS integration
-
-Include advanced LFAs only
-
-Include real-time SDN monitoring
-
-Include comments in code
-
-Use modular code structure
-
-Make it suitable for publication-level research
-
-Generate the entire implementation step-by-step.
+The objective is to support the research claim that an adaptive AI agent dynamically generates Link Flooding Attack traffic in real time while a frozen ENAS+GAN detection agent detects the resulting live network behavior through Ryu without online retraining, after which a DQN agent performs mitigation.
+
+Provide the complete modular implementation with clear files/modules for:
+
+* Ryu controller
+* OpenFlow statistics collection
+* feature extraction
+* preprocessing
+* frozen ENAS+GAN model loading
+* frozen GAN generator loading
+* epsilon-greedy bandit
+* traffic-profile translation
+* controlled Mininet traffic generation
+* detector-confidence feedback
+* DQN model loading
+* mitigation-policy execution
+* experiment manager
+* synchronized logging
+* latency measurements
+* evaluation metrics
+* result plots
+
+Do not retrain or modify the architecture of the existing GAN Generator or ENAS+GAN Detection Agent. Clearly indicate where my saved model paths, scaler, feature names, topology, and existing DQN weights should be inserted.
+
+All attack-generation functionality must be designed specifically for an isolated Mininet/Open vSwitch research testbed and should not target or generate attack traffic against public or external networks.
+
+The final implementation should be suitable for demonstrating and experimentally validating the following paper-level statement:
+
+“We evaluate a closed-loop multi-agent SDN framework in which an adaptive AI traffic-generation agent dynamically produces link-flooding attack traffic while a frozen ENAS+GAN detection agent performs online inference from live OpenFlow telemetry, followed by DQN-based mitigation. The framework is evaluated under conventional, AI-generated, adaptive adversarial, and unseen network conditions using measured generation, detection, mitigation, and end-to-end response latencies.”
