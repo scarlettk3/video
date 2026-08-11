@@ -1,0 +1,130 @@
+Develop a complete real-time multi-agent framework for detecting and mitigating Link Flooding Attacks (LFA) in an SDN environment using Ryu and Mininet.
+
+The system must contain three AI agents that operate in a closed-loop real-time setup:
+
+1. **Agent 1 — LFA Traffic Generation Agent:** Reuse my already-trained tabular GAN `Generator` as a frozen model. An epsilon-greedy bandit should control the adversarial/evasion mode of the generator. The bandit reward should be based on the attack objective minus the Detection Agent's confidence. The generator must operate during the live experiment, not generate attack samples offline. Its generated feature profiles should be translated into bounded traffic-generation parameters and used to produce controlled LFA traffic in a Mininet. The generated traffic must remain within an isolated experimental environment.
+
+2. **Agent 2 — Detection Agent:** Reuse my existing frozen ENAS+GAN classifier, preferably the `enas_with_gan` model, without retraining or changing its architecture. Integrate it directly with the Ryu controller so that Ryu continuously collects OpenFlow statistics, extracts exactly the same features used during training, applies the same preprocessing/scaler, and sends each completed feature window to the frozen classifier. The detector must output the LFA prediction and detection confidence in real time.
+
+3. **Agent 3 — DQN Mitigation Agent:** Use my DQN mitigation agent trained offline in an environment that models link congestion and many-flow crowding. When Agent 2 detects an LFA, the DQN should receive the current network state, select an appropriate mitigation action, and allow Ryu to apply the corresponding routing, flow-management, rate-control, or other safe mitigation policy in the SDN testbed.
+
+The complete system should work as a real-time closed loop:
+
+`Frozen GAN + Bandit → Live LFA Traffic → SDN Network → Ryu Statistics → Feature Extraction → Frozen ENAS+GAN Detector → DQN Mitigation → Ryu Network Action`
+
+Additionally, Detection Agent confidence must be fed back to Agent 1 so that the epsilon-greedy bandit can dynamically select attack/evasion modes according to:
+
+`Reward = Attack Effectiveness − Detection Confidence`
+
+This feedback must happen during the live experiment so that Agent 1 dynamically adapts while Agent 2 simultaneously performs real-time detection.
+
+Create a separate **Experiment Manager / Ground Truth Logger** that records when each attack begins and ends, which generator mode is selected, the target link, and all system timestamps. Ground-truth information must only be used for evaluation and must never be provided as an input feature to the Detection Agent.
+
+Record timestamps for:
+
+- generator decision
+- traffic generation/start
+- controller statistics arrival
+- feature extraction completion
+- detection inference start/end
+- detection decision
+- mitigation decision
+- mitigation rule installation
+- network recovery
+
+Use these timestamps to calculate:
+
+- generation latency
+- observation latency
+- feature-extraction latency
+- model inference latency
+- end-to-end detection latency
+- mitigation latency
+- total response latency
+- network recovery time
+
+Define real-time operation quantitatively. The system should demonstrate that feature extraction and model inference can complete before the next monitoring window arrives.
+
+Evaluate the system under at least four scenarios:
+
+- benign traffic only
+- conventional LFA
+- GAN-generated LFA
+- adaptive AI-generated LFA where the bandit responds to detector confidence
+
+Also test generalization using unseen conditions such as different topologies, numbers of hosts, link capacities, traffic mixes, attack intensities, flow counts, or routing paths while keeping the Detection Agent frozen.
+
+Evaluate the Detection Agent using:
+
+- accuracy
+- precision
+- recall
+- F1-score
+- ROC-AUC where appropriate
+- false-positive rate
+- false-negative rate
+- detection latency
+
+Evaluate the adversarial generation agent using:
+
+- attack effectiveness
+- link congestion achieved
+- evasion success rate
+- detector confidence over time
+- selected attack/evasion mode over time
+
+Evaluate the DQN mitigation agent using:
+
+- congestion reduction
+- network recovery time
+- legitimate throughput retained
+- packet loss
+- flow completion time
+- link utilization before and after mitigation
+- unnecessary mitigation rate
+
+Ensure there is no label leakage. The Detection Agent must receive only features that would realistically be available from the SDN controller. Do not include values such as attack labels, generator mode, attack session ID, or ground-truth information in classifier inputs.
+
+Run at least one continuous experiment containing alternating benign and attack periods so that the system demonstrates live transitions, for example:
+
+`Benign → Conventional LFA → Benign → Adaptive AI-generated LFA → Benign → Adaptive AI-generated LFA`
+
+Generate synchronized plots showing:
+
+- ground-truth attack state
+- link utilization
+- detector confidence
+- predicted class
+- Agent 1 attack/evasion mode
+- mitigation actions
+- network recovery
+
+The objective is to support the research claim that an adaptive AI agent dynamically generates Link Flooding Attack traffic in real time while a frozen ENAS+GAN detection agent detects the resulting live network behavior through Ryu without online retraining, after which a DQN agent performs mitigation.
+
+Provide the complete modular implementation with clear files/modules for:
+
+- Ryu controller
+- OpenFlow statistics collection
+- feature extraction
+- preprocessing
+- frozen ENAS+GAN model loading
+- frozen GAN generator loading
+- epsilon-greedy bandit
+- traffic-profile translation
+- controlled Mininet traffic generation
+- detector-confidence feedback
+- DQN model loading
+- mitigation-policy execution
+- experiment manager
+- synchronized logging
+- latency measurements
+- evaluation metrics
+- result plots
+
+Do not retrain or modify the architecture of the existing GAN Generator or ENAS+GAN Detection Agent. Clearly indicate where my saved model paths, scaler, feature names, topology, and existing DQN weights should be inserted.
+
+All attack-generation functionality must be designed specifically for an isolated Mininet research testbed and should not target or generate attack traffic against public or external networks.
+
+The final implementation should be suitable for demonstrating and experimentally validating the following paper-level statement:
+
+“We evaluate a closed-loop multi-agent SDN framework in which an adaptive AI traffic-generation agent dynamically produces link-flooding attack traffic while a frozen ENAS+GAN detection agent performs online inference from live OpenFlow telemetry, followed by DQN-based mitigation. The framework is evaluated under conventional, AI-generated, adaptive adversarial, and unseen network conditions using measured generation, detection, mitigation, and end-to-end response latencies.
