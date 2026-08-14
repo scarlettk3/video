@@ -128,3 +128,7 @@ All attack-generation functionality must be designed specifically for an isolate
 The final implementation should be suitable for demonstrating and experimentally validating the following paper-level statement:
 
 “We evaluate a closed-loop multi-agent SDN framework in which an adaptive AI traffic-generation agent dynamically produces link-flooding attack traffic while a frozen ENAS+GAN detection agent performs online inference from live OpenFlow telemetry, followed by DQN-based mitigation. The framework is evaluated under conventional, AI-generated, adaptive adversarial, and unseen network conditions using measured generation, detection, mitigation, and end-to-end response latencies.”
+
+
+
+Please confirm whether the `ryu_ids_controller.py` integrates with the agents defined in my IPython notebook if not make it happen . Additionally, I need performance metrics after testing with both benign and malicious traffic. when i generate the traffic in real time "
