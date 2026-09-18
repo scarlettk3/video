@@ -1,0 +1,109 @@
+(ryu-env) user@user-OMEN-Gaming-Laptop-16-am0xxx:~/EfficientNAS_SDCGAN_Notebooks$ curl -s http://127.0.0.1:8080/ids/status | python3 -m json.tool
+{
+    "status": "running",
+    "model": "ENAS_SDCGAN_DiscriminatorClassifier",
+    "input_dim": 99,
+    "threshold": 0.5,
+    "routing_mode": "entropy",
+    "datapaths": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        16,
+        17,
+        18,
+        19
+    ],
+    "flows_processed": 26,
+    "attacks_detected": 0,
+    "last_detection": {
+        "timestamp": 1789742593.2282078,
+        "source": "openflow_stats",
+        "src_ip": "10.0.0.4",
+        "dst_ip": "10.0.0.12",
+        "attack_probability": 0.002859458327293396,
+        "prediction": "NORMAL",
+        "ground_truth": 0,
+        "mitigation_action": "none"
+    },
+    "mitigation": {
+        "block_attacks": true,
+        "block_threshold": 0.5,
+        "block_seconds": 10,
+        "suspicion_decay_seconds": 30.0,
+        "currently_suspicious_sources": []
+    },
+    "auto_ground_truth_labeling": {
+        "enabled": true,
+        "attack_ips": [
+            "10.0.0.1",
+            "10.0.0.2",
+            "10.0.0.3"
+        ],
+        "normal_ips": [
+            "10.0.0.4",
+            "10.0.0.5",
+            "10.0.0.6"
+        ],
+        "active_overrides": {}
+    },
+    "metrics": {
+        "timestamp_utc": "2026-09-18T14:43:13Z",
+        "routing_mode": "entropy",
+        "inference_time_ms": 2.614175,
+        "processing_time_ms": 3.189815,
+        "response_time_s": 0.003189815,
+        "network_throughput_mbps": 0.003786,
+        "packet_loss_percent": 100.0,
+        "jitter_ms": null,
+        "latency_ms": null,
+        "cpu_percent": 0.0,
+        "memory_mb": 629.352,
+        "core_link_utilization_percent": 0.000333,
+        "mean_core_link_utilization_percent": 0.000243,
+        "evasion_degradation_percentage": null,
+        "robustness_retention_percent": null,
+        "controller_overhead_ms": 0.575639,
+        "labeled_flows": 26,
+        "accuracy_percent": 100.0,
+        "precision_percent": null,
+        "recall_percent": null,
+        "f1_score_percent": null,
+        "roc_auc": null,
+        "tn": 26,
+        "fp": 0,
+        "fn": 0,
+        "tp": 0,
+        "confusion_matrix": [
+            [
+                26,
+                0
+            ],
+            [
+                0,
+                0
+            ]
+        ],
+        "detection_count": 26,
+        "attack_count": 0,
+        "last_detection": {
+            "timestamp": 1789742593.2282078,
+            "source": "openflow_stats",
+            "src_ip": "10.0.0.4",
+            "dst_ip": "10.0.0.12",
+            "attack_probability": 0.002859458327293396,
+            "prediction": "NORMAL",
+            "ground_truth": 0,
+            "mitigation_action": "none"
+        },
+        "network_measurement_status": "active",
+        "uptime_s": 23.764
+    }
+}
+(ryu-env) user@user-OMEN-Gaming-Laptop-16-am0xxx:~/EfficientNAS_SDCGAN_Notebooks$
